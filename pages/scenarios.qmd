@@ -2,7 +2,131 @@
 title: "Scenario explorer"
 ---
 
-::: {.callout-note}
-Section under construction — content will be added in a later milestone (see the
-build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
+The paper reports the five geographic stress scenarios through a single cross-scenario
+summary table. Each scenario, though, produces a full set of exhibits across the whole
+intensity range and all four channel-mask arms. This page lets you **pick a scenario
+and see all of them.**
+
+Pick a scenario:
+
+```{ojs}
+scenarios = [
+  {id: "eba",          label: "EBA 2021 adverse (headline)"},
+  {id: "giips_debt",   label: "Periphery sovereign repricing (GIIPS)"},
+  {id: "russia_shock", label: "Eastern-exposure credit (Russia + CEE)"},
+  {id: "asian_debt",   label: "East-Asian sovereign"},
+  {id: "north_res",    label: "Northern real-economy"},
+  {id: "south_res",    label: "Southern real-economy"}
+]
+viewof scen = Inputs.select(scenarios, {label: "Scenario", format: d => d.label})
+```
+
+```{ojs}
+maskFiles = ({
+  eba:          FileAttachment("../data/mask_summary_eba.csv"),
+  giips_debt:   FileAttachment("../data/mask_summary_giips_debt.csv"),
+  russia_shock: FileAttachment("../data/mask_summary_russia_shock.csv"),
+  asian_debt:   FileAttachment("../data/mask_summary_asian_debt.csv"),
+  north_res:    FileAttachment("../data/mask_summary_north_res.csv"),
+  south_res:    FileAttachment("../data/mask_summary_south_res.csv")
+})
+contagionFiles = ({
+  eba:          FileAttachment("../data/contagion_summary_eba.csv"),
+  giips_debt:   FileAttachment("../data/contagion_summary_giips_debt.csv"),
+  russia_shock: FileAttachment("../data/contagion_summary_russia_shock.csv"),
+  asian_debt:   FileAttachment("../data/contagion_summary_asian_debt.csv"),
+  north_res:    FileAttachment("../data/contagion_summary_north_res.csv"),
+  south_res:    FileAttachment("../data/contagion_summary_south_res.csv")
+})
+```
+
+```{ojs}
+mask = await maskFiles[scen.id].csv({typed: true})
+contagion = await contagionFiles[scen.id].csv({typed: true})
+armName = ({mask_S: "Sales only", mask_SU: "+ Unsecured", mask_SUR: "+ Repo", mask_SURC: "+ CB credit"})
+armOrder = ["mask_S", "mask_SU", "mask_SUR", "mask_SURC"]
+maskT = mask.map(d => ({...d, arm_label: armName[d.arm]}))
+```
+
+## System equity loss by intensity
+
+Each line is a channel-mask arm; the gap between "Sales only" and "+ CB credit" is the
+framework's effect. Loss is on the wipe-to-zero measure, in percent of pre-shock CET1.
+
+```{ojs}
+Plot.plot({
+  width: 820, height: 380, grid: true,
+  x: {label: "Shock intensity"},
+  y: {label: "System equity loss (%)"},
+  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
+  marks: [
+    Plot.line(maskT, {x: "intensity_num", y: "eq_loss_resid_pct", stroke: "arm_label", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Defaults by intensity
+
+```{ojs}
+Plot.plot({
+  width: 820, height: 380, grid: true,
+  x: {label: "Shock intensity"},
+  y: {label: "Number of defaults"},
+  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
+  marks: [
+    Plot.line(maskT, {x: "intensity_num", y: "n_defaults", stroke: "arm_label", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Central-bank collateral pledged
+
+How much collateral banks pledge at the central-bank window under the full framework,
+by intensity.
+
+```{ojs}
+Plot.plot({
+  width: 820, height: 340, grid: true,
+  x: {label: "Shock intensity"},
+  y: {label: "CB pledged (€bn)"},
+  marks: [
+    Plot.areaY(maskT.filter(d => d.arm === "mask_SURC"),
+               {x: "intensity_num", y: "cb_pledged_bn", fillOpacity: 0.25}),
+    Plot.line(maskT.filter(d => d.arm === "mask_SURC"),
+              {x: "intensity_num", y: "cb_pledged_bn", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Loss amplification by intensity
+
+The contagion amplification ratio — induced losses as a fraction of the direct shock —
+by arm. Lower is better: it measures how much the fire-sale channel multiplies the
+initial hit.
+
+```{ojs}
+contagionT = contagion.map(d => ({...d, arm_label: armName[d.config]})).filter(d => d.arm_label)
+Plot.plot({
+  width: 820, height: 360, grid: true,
+  x: {label: "Shock intensity"},
+  y: {label: "Amplification ratio"},
+  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
+  marks: [
+    Plot.line(contagionT, {x: "intensity_num", y: "amp_ratio", stroke: "arm_label", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+::: {.callout-note collapse="true"}
+## Notes
+All series are cross-seed means over ten seeds for the stochastic arms (repo and
+CB-credit); the sales-only and unsecured arms are deterministic. Intensity is scenario-
+specific: for the EBA scenario it scales the 2021 adverse markdown, while for the
+geographic scenarios it is the write-down fraction on the targeted exposures, so levels
+are not comparable across scenarios — compare arms *within* a scenario. Data are
+aggregated over the whole 67-bank sample; no bank-level figures are shown.
 :::
