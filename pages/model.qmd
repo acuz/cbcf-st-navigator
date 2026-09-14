@@ -2,7 +2,79 @@
 title: "The model"
 ---
 
-::: {.callout-note}
-Section under construction — content will be added in a later milestone (see the
-build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
+The model is an agent-based stress test of 67 euro-area significant institutions.
+A shock weakens banks' capital and triggers depositor runs; each bank then meets its
+liquidity need by choosing among four funding channels — outright **sales**,
+**unsecured** borrowing, private **repo**, and **central-bank credit** — and those
+choices feed back into asset prices and into each other through a multi-week cascade.
+
+The visual below shows the mechanism the paper is about: **how banks move through the
+capital–liquidity plane as the cascade unfolds, and how the collateral framework
+changes that path.**
+
+## Banks in the capital–liquidity plane
+
+Each point is a **group of banks** (by home country; countries with fewer than three
+banks are pooled into "Other euro area", so nothing here identifies an individual
+institution). The horizontal axis is the CET1 capital ratio, the vertical axis the
+liquidity coverage ratio. Move the **intensity** slider to choose how severe the
+shock is, and the **step** slider to walk the cascade forward week by week. The left
+panel is the sales-only world; the right panel adds the full framework.
+
+Watch what happens as you advance the steps: under **sales only** the groups drift
+down and to the left — fire sales erode both capital and liquidity — while under the
+**full framework** they hold much closer to where they started, because pledging
+raises liquidity without forcing capital-eroding sales.
+
+```{ojs}
+raw = FileAttachment("../data/phase_space.csv").csv({typed: true})
+```
+
+```{ojs}
+viewof intensity = Inputs.range([0.1, 1.0], {step: 0.1, value: 0.5, label: "Shock intensity"})
+viewof step = Inputs.range([0, 14], {step: 1, value: 14, label: "Cascade step (week)"})
+```
+
+```{ojs}
+armLabel = ({S: "Sales only", SURC: "Full framework"})
+shown = raw.filter(d => Math.abs(d.intensity - intensity) < 1e-9 && d.step <= step)
+now = shown.filter(d => d.step === step)
+```
+
+```{ojs}
+Plot.plot({
+  width: 900,
+  height: 420,
+  grid: true,
+  fx: {
+    domain: ["S", "SURC"],
+    label: null,
+    tickFormat: a => armLabel[a]
+  },
+  x: {label: "CET1 ratio (%)"},
+  y: {label: "LCR (%)"},
+  color: {legend: true, label: "Country group"},
+  marks: [
+    Plot.line(shown, {
+      x: "cet1_pct", y: "lcr_pct",
+      z: d => d.group + d.arm, fx: "arm",
+      stroke: "group", strokeOpacity: 0.35, strokeWidth: 1
+    }),
+    Plot.dot(now, {
+      x: "cet1_pct", y: "lcr_pct", fx: "arm",
+      fill: "group", r: 6, stroke: "white", strokeWidth: 0.6,
+      tip: true,
+      title: d => `${d.group}: CET1 ${d.cet1_pct.toFixed(1)}%, LCR ${d.lcr_pct.toFixed(1)}% (${d.n_banks} banks)`
+    })
+  ]
+})
+```
+
+::: {.callout-note collapse="true"}
+## How to read this
+Trajectories are cross-seed averages over ten simulation seeds, aggregated to
+country groups of at least three banks. The two panels share axes, so a group's
+horizontal position is directly comparable across the sales-only and full-framework
+worlds. Source: group-aggregated headline results; see the data provenance note in
+the repository.
 :::

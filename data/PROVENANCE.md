@@ -2,14 +2,16 @@
 
 Every file here is **aggregate-only** and safe to publish, produced by
 `working_code/analysis/export_site_data.R` from the research repo's
-already-aggregated `paper/tables/*.csv`.
+already-aggregated `paper/tables/*.csv` (and, for the phase-space
+trajectories, from group-aggregated headline liabilities).
 
 ## Confidentiality rule (enforced at export)
 
-- Allowlist only: full-sample / arm / intensity / asset-category aggregates.
+- Allowlist only: full-sample / arm / intensity / asset-category aggregates,
+  plus country-group trajectories pooled to >= 3 banks.
 - Export refuses any file carrying a bank/LEI/entity identifier column.
-- No per-bank or per-country rows, so no cell resolves to < 3 banks.
-- Country- and bank-level tables are intentionally NOT exported here.
+- No cell resolves to < 3 banks.
+- Country- and bank-level source tables are intentionally NOT exported.
 
 ## Files
 
@@ -36,3 +38,4 @@ already-aggregated `paper/tables/*.csv`.
 | `distress_streak.csv` | `tab_distress_streak_summary.csv` | 1 | 7 |
 | `collateral_pool.csv` | `tab_validation_collateral_pool.csv` | 5 | 3 |
 | `calibration_friction.csv` | `tab_calibration_friction.csv` | 14 | 3 |
+| `phase_space.csv` | `headline/eba liabilities (group-aggregated)` | 2665 | 7 |
