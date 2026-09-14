@@ -1,0 +1,22 @@
+category,channel,liquidity_value
+Derivatives,sales,0.25
+Equity,sales,0.25
+Bank bonds,sales,0.39
+Central government,sales,0.433
+Regional/other government,sales,0.281
+Corporate debt,sales,0.379
+Loans / credit claims,sales,0.006
+Derivatives,repo,0
+Equity,repo,0
+Bank bonds,repo,0.268
+Central government,repo,0.395
+Regional/other government,repo,0.148
+Corporate debt,repo,0.234
+Loans / credit claims,repo,0.002
+Derivatives,cb,0
+Equity,cb,0
+Bank bonds,cb,0.459
+Central government,cb,0.644
+Regional/other government,cb,0.285
+Corporate debt,cb,0.453
+Loans / credit claims,cb,0.555

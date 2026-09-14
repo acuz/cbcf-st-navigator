@@ -39,3 +39,4 @@ trajectories, from group-aggregated headline liabilities).
 | `collateral_pool.csv` | `tab_validation_collateral_pool.csv` | 5 | 3 |
 | `calibration_friction.csv` | `tab_calibration_friction.csv` | 14 | 3 |
 | `phase_space.csv` | `headline/eba liabilities (group-aggregated)` | 2665 | 7 |
+| `channel_liquidity.csv` | `input/{haircuts,repo_haircuts,max_discounts}.csv (schedule)` | 21 | 3 |

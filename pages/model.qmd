@@ -78,3 +78,96 @@ horizontal position is directly comparable across the sales-only and full-framew
 worlds. Source: group-aggregated headline results; see the data provenance note in
 the repository.
 :::
+
+## Collateral-conditional liquidity
+
+The heart of the model is a simple idea: **the same asset is worth a different amount
+of liquidity depending on how you try to raise cash against it.** A bank can *sell* an
+asset (and take a price discount), *repo* it (and take a private haircut), or *pledge*
+it at the *central bank* (and take the Eurosystem haircut). An asset that is nearly
+cash-good in one channel can be useless in another.
+
+### Why the channels differ
+
+Pick an asset below. The bars show, illustratively, how much usable liquidity €1 of
+that asset yields in each channel — and the note explains why.
+
+```{ojs}
+archetypes = [
+  {asset: "Government bond", sales: 0.90, repo: 0.98, cb: 0.99,
+   why: "Deep market and a tiny haircut: liquid in every channel, and best of all at the central bank."},
+  {asset: "Covered bond", sales: 0.85, repo: 0.94, cb: 0.93,
+   why: "Marketable and eligible: sellable at a modest discount, and pledgeable in both repo and at the central bank."},
+  {asset: "Corporate bond", sales: 0.72, repo: 0.80, cb: 0.85,
+   why: "Thinner market and larger haircuts, but still usable in all three channels."},
+  {asset: "Bank loan (credit claim)", sales: 0.00, repo: 0.00, cb: 0.65,
+   why: "Non-marketable: it cannot be sold or repo'd at all. Only the central bank accepts it — at a haircut — which is exactly what the collateral framework controls."},
+  {asset: "Equity", sales: 0.60, repo: 0.00, cb: 0.00,
+   why: "Sellable at a discount, but ineligible as collateral anywhere: no repo, no central-bank credit."}
+]
+viewof pick = Inputs.select(archetypes, {label: "Asset", format: d => d.asset})
+```
+
+```{ojs}
+Plot.plot({
+  height: 220, width: 640, marginLeft: 120,
+  x: {domain: [0, 1], label: "Usable liquidity per €1", tickFormat: "%"},
+  y: {label: null},
+  color: {legend: false},
+  marks: [
+    Plot.barX([
+      {channel: "Sell", v: pick.sales},
+      {channel: "Repo", v: pick.repo},
+      {channel: "Central bank", v: pick.cb}
+    ], {y: "channel", x: "v", fill: "channel", sort: {y: null}}),
+    Plot.text([
+      {channel: "Sell", v: pick.sales},
+      {channel: "Repo", v: pick.repo},
+      {channel: "Central bank", v: pick.cb}
+    ], {y: "channel", x: "v", text: d => d.v === 0 ? "unusable" : (d.v * 100).toFixed(0) + "¢",
+        dx: 6, textAnchor: "start"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+```{ojs}
+md`**${pick.asset}.** ${pick.why}`
+```
+
+::: {.callout-note collapse="true"}
+These five archetypes use rounded, illustrative haircuts to convey the mechanism; the
+next chart shows the actual schedule.
+:::
+
+### The realised schedule
+
+Averaged over the actual Eurosystem eligibility and haircut schedule (and the LCH repo
+schedule and the sales-discount calibration), here is the liquidity value of €1 in each
+channel by asset category. The pattern the model turns on is stark: **loans and credit
+claims are essentially unusable except at the central bank**, while government paper is
+usable everywhere.
+
+```{ojs}
+chl = FileAttachment("../data/channel_liquidity.csv").csv({typed: true})
+chLabel = ({sales: "Sell", repo: "Repo", cb: "Central bank"})
+```
+
+```{ojs}
+Plot.plot({
+  width: 900, height: 380, marginLeft: 160,
+  x: {domain: [0, 1], label: "Usable liquidity per €1", tickFormat: "%"},
+  y: {label: null},
+  fy: {label: null},
+  color: {legend: true, domain: ["sales", "repo", "cb"],
+          tickFormat: c => chLabel[c], label: "Channel"},
+  marks: [
+    Plot.barX(chl, {
+      x: "liquidity_value", y: "channel", fill: "channel", fy: "category",
+      sort: {y: null}
+    }),
+    Plot.ruleX([0])
+  ]
+})
+```
+
