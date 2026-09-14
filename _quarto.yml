@@ -6,7 +6,7 @@ project:
     - pages/*.qmd
 
 website:
-  title: "CBCF-ST Navigator"
+  title: "CBCF Stress Test - Navigator"
   description: >
     Interactive companion to "Collateral Constraints and Endogenous Liquidity
     Stress: The Central Bank Collateral Framework as a Financial Stability Tool."

@@ -1,4 +1,4 @@
-# CBCF-ST Navigator
+# CBCF Stress Test - Navigator
 
 Interactive companion to the working paper *Collateral Constraints and Endogenous
 Liquidity Stress: The Central Bank Collateral Framework as a Financial Stability
