@@ -2,7 +2,114 @@
 title: "Robustness"
 ---
 
-::: {.callout-note}
-Section under construction — content will be added in a later milestone (see the
-build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
+Two questions about the headline decomposition: does the ranking of the channels
+survive a different way of attributing their contributions (Shapley), and does it
+survive perturbing the model's key frictions (sensitivity sweeps)?
+
+## Shapley decomposition
+
+The headline marginals activate the channels in a fixed order (U → R → C), which
+under-credits whichever channel is added last. The Shapley value averages each
+channel's contribution over all six activation orders. Below, canonical (sequential)
+against Shapley, for each channel, at four intensities. The sign is the same under both
+rules; what changes is the *ranking* — the central-bank channel is systematically
+under-credited by the sequential order at moderate stress, and dominates in the tail.
+
+```{ojs}
+shap = FileAttachment("../data/shapley_decomp.csv").csv({typed: true})
+shapLong = shap.flatMap(r => [
+  {intensity: r.intensity, channel: "Unsecured",   rule: "Canonical", value: r.canonical_U},
+  {intensity: r.intensity, channel: "Unsecured",   rule: "Shapley",   value: r.shapley_U},
+  {intensity: r.intensity, channel: "Repo",        rule: "Canonical", value: r.canonical_R},
+  {intensity: r.intensity, channel: "Repo",        rule: "Shapley",   value: r.shapley_R},
+  {intensity: r.intensity, channel: "CB credit",   rule: "Canonical", value: r.canonical_C},
+  {intensity: r.intensity, channel: "CB credit",   rule: "Shapley",   value: r.shapley_C}
+])
+```
+
+```{ojs}
+Plot.plot({
+  width: 860, height: 380, marginBottom: 50,
+  x: {label: null, tickFormat: d => "I=" + d},
+  y: {label: "Contribution (pp of CET1)", grid: true},
+  fx: {label: null},
+  color: {legend: true, domain: ["Canonical", "Shapley"], label: "Attribution"},
+  marks: [
+    Plot.barY(shapLong, {fx: "channel", x: "intensity", y: "value", fill: "rule",
+                         dx: 0, sort: {fx: null}}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Sensitivity sweeps
+
+Each sweep perturbs one friction one-at-a-time and re-measures the channel marginals
+Δ_U / Δ_R / Δ_C (percentage points of CET1) at the focal intensity. The dashed line
+marks the headline calibration. Across all four, the **sign and ordering of the
+marginals are preserved** — repo positive and largest, central-bank credit positive,
+unsecured small.
+
+```{ojs}
+sweeps = [
+  {file: "sensitivity_freeze.csv", key: "nr", label: "Repo-freeze threshold (banks running)"},
+  {file: "sensitivity_fsa.csv",    key: "amp", label: "Fire-sale amplifier"},
+  {file: "sensitivity_rho.csv",    key: "rho", label: "Repo-congestion elasticity"},
+  {file: "sensitivity_run_k1.csv", key: "k1", label: "Depositor-run intensity"}
+]
+freeze = FileAttachment("../data/sensitivity_freeze.csv").csv({typed: true})
+fsa    = FileAttachment("../data/sensitivity_fsa.csv").csv({typed: true})
+rho    = FileAttachment("../data/sensitivity_rho.csv").csv({typed: true})
+runk1  = FileAttachment("../data/sensitivity_run_k1.csv").csv({typed: true})
+sweepData = ({sensitivity_freeze: freeze, sensitivity_fsa: fsa, sensitivity_rho: rho, sensitivity_run_k1: runk1})
+```
+
+```{ojs}
+function sweepPlot(rows, key, label) {
+  const long = rows.flatMap(r => [
+    {x: r[key], channel: "Δ_U", value: r.delta_U_pp, headline: r.headline},
+    {x: r[key], channel: "Δ_R", value: r.delta_R_pp, headline: r.headline},
+    {x: r[key], channel: "Δ_C", value: r.delta_C_pp, headline: r.headline}
+  ])
+  const hx = rows.filter(r => r.headline === true || r.headline === "TRUE").map(r => r[key])
+  return Plot.plot({
+    width: 420, height: 260, grid: true, marginBottom: 40,
+    x: {label: label},
+    y: {label: "Marginal (pp)"},
+    color: {legend: true, label: "Channel"},
+    marks: [
+      hx.length ? Plot.ruleX(hx, {stroke: "grey", strokeDasharray: "3,3"}) : null,
+      Plot.line(long, {x: "x", y: "value", stroke: "channel", marker: "circle"}),
+      Plot.ruleY([0])
+    ].filter(Boolean)
+  })
+}
+```
+
+::: {layout-ncol=2}
+```{ojs}
+sweepPlot(freeze.filter(r => r.nu === 20), "nr", "Repo-freeze threshold")
+```
+
+```{ojs}
+sweepPlot(fsa, "amp", "Fire-sale amplifier")
+```
+
+```{ojs}
+sweepPlot(rho, "rho", "Repo-congestion elasticity")
+```
+
+```{ojs}
+sweepPlot(runk1, "k1", "Depositor-run intensity")
+```
+:::
+
+::: {.callout-note collapse="true"}
+## Notes
+Shapley values average each channel's marginal over the six activation orderings of
+{U, R, C}; standard errors follow by exact propagation from the arm-level cross-seed
+errors. Sensitivity sweeps vary one friction at a time at the focal intensity, ten
+seeds per stochastic cell; the freeze panel fixes the unsecured-freeze threshold at its
+headline value and varies the repo-freeze threshold. All aggregates over the whole
+67-bank sample.
 :::

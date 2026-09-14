@@ -2,7 +2,126 @@
 title: "Headline results"
 ---
 
-::: {.callout-note}
-Section under construction — content will be added in a later milestone (see the
-build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
+These are the main results for the **adverse (headline)** scenario — a markdown of the
+non-marketable loan book calibrated on the EBA 2021 adverse projections — across the
+full intensity range and all four channel-mask arms. The single message: **adding the
+collateral framework's channels turns fire-sale losses and defaults sharply down, and
+most of that reduction comes from private repo, with central-bank credit insuring the
+tail.**
+
+```{ojs}
+mask = FileAttachment("../data/mask_summary_eba.csv").csv({typed: true})
+armName = ({mask_S: "Sales only", mask_SU: "+ Unsecured", mask_SUR: "+ Repo", mask_SURC: "+ CB credit"})
+armDomain = ["Sales only", "+ Unsecured", "+ Repo", "+ CB credit"]
+maskT = mask.map(d => ({...d, arm_label: armName[d.arm]}))
+```
+
+```{ojs}
+function armPlot(rows, yfield, ylabel) {
+  const solid = rows.filter(d => d.arm_label !== "+ Unsecured")
+  const dashed = rows.filter(d => d.arm_label === "+ Unsecured")
+  return Plot.plot({
+    width: 820, height: 360, grid: true,
+    x: {label: "Shock intensity"},
+    y: {label: ylabel},
+    color: {legend: true, domain: armDomain, label: "Arm"},
+    marks: [
+      Plot.line(solid, {x: "intensity_num", y: yfield, stroke: "arm_label", marker: "circle"}),
+      Plot.line(dashed, {x: "intensity_num", y: yfield, stroke: "arm_label",
+                         strokeDasharray: "5,3", marker: "circle"}),
+      Plot.ruleY([0])
+    ]
+  })
+}
+```
+
+## System equity loss by arm
+
+Loss on the wipe-to-zero measure, in percent of pre-shock CET1. The gap between "Sales
+only" and "+ CB credit" is the framework's total effect. (The **+ Unsecured** arm is
+dashed because it coincides with "Sales only" once the unsecured market freezes.)
+
+```{ojs}
+armPlot(maskT, "eq_loss_resid_pct", "System equity loss (%)")
+```
+
+## Channel marginals
+
+Decomposing that gap into the marginal contribution of each channel: Δ_U (unsecured),
+Δ_R (repo), Δ_C (central-bank credit). Repo is the workhorse of moderate stress; the
+central-bank marginal is small until the tail.
+
+```{ojs}
+intensities = Array.from(new Set(maskT.map(d => d.intensity_num))).sort((a, b) => a - b)
+marginals = intensities.flatMap(I => {
+  const at = arm => {
+    const r = maskT.find(d => d.intensity_num === I && d.arm === arm)
+    return r ? r.eq_loss_resid_pct : NaN
+  }
+  return [
+    {intensity: I, channel: "Δ_U (unsecured)", value: at("mask_S") - at("mask_SU")},
+    {intensity: I, channel: "Δ_R (repo)",      value: at("mask_SU") - at("mask_SUR")},
+    {intensity: I, channel: "Δ_C (CB credit)", value: at("mask_SUR") - at("mask_SURC")}
+  ]
+})
+```
+
+```{ojs}
+Plot.plot({
+  width: 820, height: 360, grid: true,
+  x: {label: "Shock intensity"},
+  y: {label: "Marginal loss reduction (pp of CET1)"},
+  color: {legend: true, label: "Channel"},
+  marks: [
+    Plot.line(marginals, {x: "intensity", y: "value", stroke: "channel", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Defaults by arm
+
+```{ojs}
+armPlot(maskT, "n_defaults", "Number of defaults")
+```
+
+## Central-bank collateral pledged
+
+```{ojs}
+Plot.plot({
+  width: 820, height: 320, grid: true,
+  x: {label: "Shock intensity"}, y: {label: "CB pledged (€bn)"},
+  marks: [
+    Plot.areaY(maskT.filter(d => d.arm === "mask_SURC"),
+               {x: "intensity_num", y: "cb_pledged_bn", fillOpacity: 0.25}),
+    Plot.line(maskT.filter(d => d.arm === "mask_SURC"),
+              {x: "intensity_num", y: "cb_pledged_bn", marker: "circle"}),
+    Plot.ruleY([0])
+  ]
+})
+```
+
+## Where the eligible collateral comes from
+
+Applying the Eurosystem eligibility and haircut schedule to banks' unencumbered
+holdings gives the collateral pool banks can pledge. It is dominated by non-marketable
+credit claims — the loan book that only the central bank accepts.
+
+```{ojs}
+pool = FileAttachment("../data/collateral_pool.csv").csv({typed: true})
+Plot.plot({
+  width: 760, height: 300, marginLeft: 200, grid: true,
+  x: {label: "Share of eligible pool (%)"}, y: {label: null},
+  marks: [
+    Plot.barX(pool, {x: "share_pct", y: "ecb_category", sort: {y: "x", reverse: true}, fill: "#4575b4"}),
+    Plot.ruleX([0])
+  ]
+})
+```
+
+::: {.callout-note collapse="true"}
+## Notes
+Cross-seed means over ten seeds for the stochastic arms (repo, CB-credit); sales-only
+and unsecured are deterministic. Loss is on the wipe-to-zero measure (percent of
+pre-shock CET1). All figures are aggregated over the whole 67-bank sample.
 :::

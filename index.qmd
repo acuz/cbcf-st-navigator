@@ -28,9 +28,15 @@ data, and the underlying supervisory inputs are never published.
 Please cite the working paper. A formal citation and DOI will be added here once the
 paper is finalised.
 
-::: {.callout-note}
-This supplement is under construction. Sections are being added incrementally; see
-[The model](pages/model.qmd), [Headline results](pages/results.qmd),
-[Scenario explorer](pages/scenarios.qmd), [Robustness](pages/robustness.qmd), and
-[Methods](pages/methods.qmd).
-:::
+## Explore
+
+- **[The model](pages/model.qmd)** — how banks move through the capital–liquidity
+  plane under stress, and why the same asset yields different liquidity in each funding
+  channel.
+- **[Headline results](pages/results.qmd)** — losses, defaults, channel marginals and
+  the eligible-collateral pool for the adverse scenario.
+- **[Scenario explorer](pages/scenarios.qmd)** — pick any scenario and see all its
+  exhibits across the intensity range.
+- **[Robustness](pages/robustness.qmd)** — the Shapley decomposition and one-at-a-time
+  sensitivity sweeps.
+- **[Methods](pages/methods.qmd)** — model, data, confidentiality, and reproducibility.

@@ -2,7 +2,71 @@
 title: "Methods & reproducibility"
 ---
 
-::: {.callout-note}
-Section under construction — content will be added in a later milestone (see the
-build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
-:::
+## The model in brief
+
+The stress test is an agent-based model of 67 euro-area significant institutions. A
+shock marks down bank assets and triggers a continuous depositor-run response; each
+bank then meets its liquidity need by searching over four funding channels — outright
+**sales**, **unsecured** borrowing, private **repo**, and **central-bank credit** —
+ranking feasible combinations by their implications for prices, haircuts, capital,
+leverage and risk-weighted capital rather than following a fixed pecking order. Sales
+feed back into asset prices; pledging encumbers collateral across the repo and
+central-bank windows. The cascade runs in weekly steps to convergence (well within a
+15-week horizon).
+
+The **channel-mask arms** switch the channels on cumulatively — sales only
+($\mathcal{M}^{S}$), then unsecured ($\mathcal{M}^{SU}$), repo ($\mathcal{M}^{SUR}$),
+and central-bank credit ($\mathcal{M}^{SURC}$) — so the difference between consecutive
+arms isolates each channel's marginal contribution.
+
+## Data
+
+| Input | Source | Confidential? |
+|-------|--------|---------------|
+| Balance-sheet composition & encumbrance | ECB FINREP | Yes — never published |
+| Loan-book (credit-claim) composition | ECB AnaCredit | Yes — never published |
+| Collateral eligibility & central-bank haircuts | ECB Eligible Assets dataset | Public |
+| Private-repo haircuts | LCH acceptable-collateral schedule | Public |
+| Market depth & sales discounts | Derived from public market data | Public |
+| Shock calibration | EBA 2021 adverse stress test | Public |
+
+The panel is the December 2021 vintage. Bank identities and any bank-level figures are
+confidential and never appear on this site or in the paper.
+
+## Confidentiality on this site
+
+Everything shown here is **aggregated to groups of at least three banks**. The site is
+built from a curated export of group- and system-level results only; it never contains
+bank-level rows, identifiers, or the underlying supervisory inputs. Country groups with
+fewer than three banks are pooled into a residual group.
+
+## Headline calibration
+
+The frictions active in the headline runs:
+
+```{ojs}
+cal = FileAttachment("../data/calibration_friction.csv").csv({typed: true})
+Inputs.table(cal, {
+  columns: ["knob", "value", "source"],
+  header: {knob: "Parameter", value: "Value", source: "Source / note"},
+  rows: 20, layout: "auto"
+})
+```
+
+## Reproducibility
+
+Every figure and table traces to a single script with a fixed seed. The stochastic arms
+(repo and central-bank credit) are averaged over ten seeds with cross-seed standard
+errors; the sales-only and unsecured arms are deterministic. A locked regression
+baseline pins the model's determinism, and this site's data layer is produced by one
+export script that enforces the aggregation rules above.
+
+## How to cite
+
+Please cite the working paper:
+
+> Cuzzola, A., Barbieri, C., & Bindseil, U. *Collateral Constraints and Endogenous
+> Liquidity Stress: The Central Bank Collateral Framework as a Financial Stability
+> Tool.* Working paper.
+
+A formal citation and DOI will be added when the paper is finalised.
