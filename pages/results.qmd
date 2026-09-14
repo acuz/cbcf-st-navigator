@@ -37,26 +37,49 @@ function armPlot(rows, yfield, ylabel) {
 
 ## System equity loss by arm
 
-Loss on the wipe-to-zero measure, in percent of pre-shock CET1. The gap between "Sales
-only" and "+ CB credit" is the framework's total effect. (The **+ Unsecured** arm is
-dashed because it coincides with "Sales only" once the unsecured market freezes.)
+Loss in percent of pre-shock CET1. The gap between "Sales only" and "+ CB credit" is the
+framework's total effect. (The **+ Unsecured** arm is dashed because it coincides with
+"Sales only" once the unsecured market freezes.)
+
+Two loss measures are available. **Wipe-to-zero** counts the full creditor loss when a
+bank defaults, so it is *default-driven* — it jumps sharply whenever a large bank
+crosses into default. **Frozen** is the mark-to-market capital loss of surviving banks,
+which moves smoothly. Toggle between them to see how much of the drama is the measure:
 
 ```{ojs}
-armPlot(maskT, "eq_loss_resid_pct", "System equity loss (%)")
+viewof measure = Inputs.radio(
+  new Map([["Wipe-to-zero (default-driven)", "eq_loss_resid_pct"],
+           ["Frozen (mark-to-market)", "eq_loss_frozen_pct"]]),
+  {value: "eq_loss_resid_pct", label: "Loss measure"})
 ```
+
+```{ojs}
+armPlot(maskT, measure, "System equity loss (%)")
+```
+
+::: {.callout-important}
+## The spike at intensity 0.5
+On the **wipe-to-zero** measure a cluster of large banks tips into default right at
+intensity 0.5 — sales-only defaults jump from 3 to 8 and creditor losses leap from ~€60
+bn to ~€2,050 bn. Private repo is *just* enough to pull that cluster back (defaults
+8 → 5), which is why the repo marginal spikes there; above 0.5 the same banks default
+regardless, so repo fades and central-bank credit carries the tail. Switch to the
+**frozen** measure above and the spike largely disappears: it is a genuine default
+threshold, amplified by the default-driven wipe measure, not a numerical glitch.
+:::
 
 ## Channel marginals
 
 Decomposing that gap into the marginal contribution of each channel: Δ_U (unsecured),
 Δ_R (repo), Δ_C (central-bank credit). Repo is the workhorse of moderate stress; the
-central-bank marginal is small until the tail.
+central-bank marginal is small until the tail. (Uses the loss measure selected above.)
 
 ```{ojs}
 intensities = Array.from(new Set(maskT.map(d => d.intensity_num))).sort((a, b) => a - b)
 marginals = intensities.flatMap(I => {
   const at = arm => {
     const r = maskT.find(d => d.intensity_num === I && d.arm === arm)
-    return r ? r.eq_loss_resid_pct : NaN
+    return r ? r[measure] : NaN
   }
   return [
     {intensity: I, channel: "Δ_U (unsecured)", value: at("mask_S") - at("mask_SU")},

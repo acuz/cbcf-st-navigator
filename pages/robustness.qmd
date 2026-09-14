@@ -42,6 +42,18 @@ Plot.plot({
 })
 ```
 
+::: {.callout-important}
+## Why repo is so large at intensity 0.5
+The big repo contribution at I=0.5 is the same **default cliff** seen on the
+[Headline results](results.qmd) page: a cluster of large banks tips into default there,
+and private repo is just enough to pull it back, so the marginal is huge on the
+default-driven wipe-to-zero measure. Above 0.5 those banks default regardless, repo
+fades, and central-bank credit takes over — which is why the Shapley reattributes much
+of repo's I=0.5 spike to the central-bank channel, and why $\varphi_C$ dominates at
+I=0.7–0.9. On the frozen (mark-to-market) measure the spike is far milder; toggle the
+measure on the Headline results page to see it.
+:::
+
 ## Sensitivity sweeps
 
 Each sweep perturbs one friction one-at-a-time and re-measures the channel marginals
