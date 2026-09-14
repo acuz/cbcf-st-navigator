@@ -81,70 +81,8 @@ Plot.plot({
 
 ::: {.callout-note collapse="true"}
 This trajectory is **illustrative** — a stylised single bank drawn to show the
-mechanism and the thresholds. The thresholds themselves are the model's actual values
-(runs begin at 10% CET1, reach full intensity at 8.5%; LCR floor at 100%). The next
-chart shows the real paths the model produces across all bank groups.
-:::
-
-### What the model actually produces
-
-Each point below is a **group of banks** (by home country; countries with fewer than
-three banks are pooled into "Other euro area", so nothing here identifies an individual
-institution). Move the **intensity** slider to choose how severe the shock is, and the
-**step** slider to walk the cascade forward. The left panel is the sales-only world;
-the right adds the full framework — and the group paths echo the stylised story above.
-
-```{ojs}
-raw = FileAttachment("../data/phase_space.csv").csv({typed: true})
-```
-
-```{ojs}
-viewof intensity = Inputs.range([0.1, 1.0], {step: 0.1, value: 0.5, label: "Shock intensity"})
-viewof step = Inputs.range([0, 14], {step: 1, value: 14, label: "Cascade step (week)"})
-```
-
-```{ojs}
-armLabel = ({S: "Sales only", SURC: "Full framework"})
-shown = raw.filter(d => Math.abs(d.intensity - intensity) < 1e-9 && d.step <= step)
-now = shown.filter(d => d.step === step)
-```
-
-```{ojs}
-Plot.plot({
-  width: 900,
-  height: 420,
-  grid: true,
-  fx: {
-    domain: ["S", "SURC"],
-    label: null,
-    tickFormat: a => armLabel[a]
-  },
-  x: {label: "CET1 ratio (%)"},
-  y: {label: "LCR (%)"},
-  color: {legend: true, label: "Country group"},
-  marks: [
-    Plot.line(shown, {
-      x: "cet1_pct", y: "lcr_pct",
-      z: d => d.group + d.arm, fx: "arm",
-      stroke: "group", strokeOpacity: 0.35, strokeWidth: 1
-    }),
-    Plot.dot(now, {
-      x: "cet1_pct", y: "lcr_pct", fx: "arm",
-      fill: "group", r: 6, stroke: "white", strokeWidth: 0.6,
-      tip: true,
-      title: d => `${d.group}: CET1 ${d.cet1_pct.toFixed(1)}%, LCR ${d.lcr_pct.toFixed(1)}% (${d.n_banks} banks)`
-    })
-  ]
-})
-```
-
-::: {.callout-note collapse="true"}
-## How to read this
-Trajectories are cross-seed averages over ten simulation seeds, aggregated to
-country groups of at least three banks. The two panels share axes, so a group's
-horizontal position is directly comparable across the sales-only and full-framework
-worlds. Source: group-aggregated headline results; see the data provenance note in
-the repository.
+mechanism and the thresholds. The thresholds themselves are the model's actual values:
+runs begin at 10% CET1, reach full intensity at 8.5%, and the LCR floor is 100%.
 :::
 
 ## Collateral-conditional liquidity
