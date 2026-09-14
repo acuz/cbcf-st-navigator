@@ -1,0 +1,15 @@
+knob,value,source
+$\rho^{\text{cong}}$ (repo-haircut elasticity),10,Headline specification
+$\alpha$ (repo-rate encumbrance elasticity),20,Headline specification
+$\beta$ (repo-rate leverage elasticity),3,Headline specification
+Margin-call mechanism,disabled,Headline specification
+APP envelope,zero,Headline specification
+$N^{\text{freeze}}_U$ (unsecured-freeze threshold),20 (30\% of banks),Unsecured market freezes first
+$N^{\text{freeze}}_R$ (repo-freeze threshold),30 (45\% of banks),Repo market remains open longer
+$\xi_{\text{soft}}$ (soft RWCR run trigger),0.13,Empirical calibration
+$\xi_{\text{hard}}$ (hard RWCR run trigger),0.085,Basel III minimum
+$\kappa_1$ (run intensity at hard threshold),0.30,Model specification
+$\eta$ (persistence escalation),0.5,Model specification
+$T$ (horizon),15 weekly steps,Simulation protocol
+"$n_{\text{runs}}$ for stochastic arms (SUR, SURC)",10,Simulation protocol
+"$n_{\text{runs}}$ for deterministic arms (S, SU)",1,Simulation protocol
