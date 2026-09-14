@@ -1,0 +1,36 @@
+---
+title: "Collateral Constraints and Endogenous Liquidity Stress"
+subtitle: "Interactive supplement to the working paper"
+---
+
+## What this is
+
+This site is the interactive companion to the working paper *Collateral Constraints
+and Endogenous Liquidity Stress: The Central Bank Collateral Framework as a Financial
+Stability Tool* (Cuzzola, Barbieri & Bindseil). It serves two purposes the printed
+paper cannot:
+
+- **Room the paper does not have.** Where the manuscript reports a single summary
+  exhibit — the cross-scenario robustness table, for instance — this site shows the
+  full set of exhibits behind it, one per scenario.
+- **Mechanics you can move.** Interactive and illustrative visuals introduce how the
+  model works: how banks move through the capital–liquidity plane under stress, and
+  why the same asset carries a different liquidity value in each funding channel.
+
+## Confidentiality
+
+Everything here is **aggregated to groups of at least three banks**. The site is
+built from a curated export of group-level results only; it contains no bank-level
+data, and the underlying supervisory inputs are never published.
+
+## How to cite
+
+Please cite the working paper. A formal citation and DOI will be added here once the
+paper is finalised.
+
+::: {.callout-note}
+This supplement is under construction. Sections are being added incrementally; see
+[The model](pages/model.qmd), [Headline results](pages/results.qmd),
+[Scenario explorer](pages/scenarios.qmd), [Robustness](pages/robustness.qmd), and
+[Methods](pages/methods.qmd).
+:::

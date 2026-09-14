@@ -1,0 +1,10 @@
+# Quarto build artefacts
+/_site/
+/.quarto/
+
+# never allow confidential inputs into this public repo
+/data/banks/
+*bank_*.csv
+business_models.csv
+*.key
+.Renviron

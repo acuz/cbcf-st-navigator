@@ -1,0 +1,37 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - pages/*.qmd
+
+website:
+  title: "CBCF Stress Test — Supplement"
+  description: >
+    Interactive companion to "Collateral Constraints and Endogenous Liquidity
+    Stress: The Central Bank Collateral Framework as a Financial Stability Tool."
+  reader-mode: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: pages/model.qmd
+        text: The model
+      - href: pages/results.qmd
+        text: Headline results
+      - href: pages/scenarios.qmd
+        text: Scenario explorer
+      - href: pages/robustness.qmd
+        text: Robustness
+      - href: pages/methods.qmd
+        text: Methods
+  page-footer:
+    center: "Supplementary material to Cuzzola, Barbieri & Bindseil. No confidential data: all statistics are aggregated to groups of at least three banks."
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    code-tools: false
+    fig-responsive: true

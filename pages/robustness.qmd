@@ -1,0 +1,8 @@
+---
+title: "Robustness"
+---
+
+::: {.callout-note}
+Section under construction — content will be added in a later milestone (see the
+build plan in the research repo, `docs/plans/2026-09-14_supplemental-website.md`).
+:::
