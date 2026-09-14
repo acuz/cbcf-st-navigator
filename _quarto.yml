@@ -28,6 +28,9 @@ website:
   page-footer:
     center: "Supplementary material to Cuzzola, Barbieri & Bindseil. No confidential data: all statistics are aggregated to groups of at least three banks."
 
+execute:
+  echo: false
+
 format:
   html:
     theme: cosmo

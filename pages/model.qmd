@@ -12,19 +12,87 @@ The visual below shows the mechanism the paper is about: **how banks move throug
 capital–liquidity plane as the cascade unfolds, and how the collateral framework
 changes that path.**
 
-## Banks in the capital–liquidity plane
+## The capital–liquidity plane
 
-Each point is a **group of banks** (by home country; countries with fewer than three
-banks are pooled into "Other euro area", so nothing here identifies an individual
-institution). The horizontal axis is the CET1 capital ratio, the vertical axis the
-liquidity coverage ratio. Move the **intensity** slider to choose how severe the
-shock is, and the **step** slider to walk the cascade forward week by week. The left
-panel is the sales-only world; the right panel adds the full framework.
+Every bank lives in a plane with two axes: its **CET1 capital ratio** (horizontal)
+and its **liquidity coverage ratio** (vertical). Stress pushes a bank through this
+plane, and where it goes determines whether it stabilises or spirals. Two thresholds
+matter:
 
-Watch what happens as you advance the steps: under **sales only** the groups drift
-down and to the left — fire sales erode both capital and liquidity — while under the
-**full framework** they hold much closer to where they started, because pledging
-raises liquidity without forcing capital-eroding sales.
+- **CET1 = 10%** — below this a bank's depositors start to run, and the runs intensify
+  as capital falls further, reaching full intensity at **CET1 = 8.5%**.
+- **LCR = 100%** — the regulatory liquidity floor.
+
+### A typical bank under stress
+
+The illustration below traces a *stylised* bank through the plane as the cascade
+advances — step through it with the slider. Under **sales only**, meeting outflows by
+fire-selling erodes both capital and liquidity: the bank drifts down and left, crosses
+the LCR floor, enters the run zone, and spirals. Under the **full framework**, the same
+bank pledges collateral instead — liquidity holds up, capital is preserved, and it
+stays clear of the run threshold.
+
+```{ojs}
+mockSales = [
+  {step:0, cet1:14.0, lcr:150}, {step:1, cet1:13.0, lcr:128}, {step:2, cet1:12.0, lcr:110},
+  {step:3, cet1:11.0, lcr:98},  {step:4, cet1:9.6, lcr:84},   {step:5, cet1:7.8, lcr:68},
+  {step:6, cet1:5.6, lcr:54},   {step:7, cet1:3.8, lcr:44}
+]
+mockFramework = [
+  {step:0, cet1:14.0, lcr:150}, {step:1, cet1:13.6, lcr:146}, {step:2, cet1:13.3, lcr:141},
+  {step:3, cet1:13.1, lcr:139}, {step:4, cet1:12.9, lcr:138}, {step:5, cet1:12.8, lcr:137},
+  {step:6, cet1:12.8, lcr:137}, {step:7, cet1:12.7, lcr:136}
+]
+viewof mstep = Inputs.range([0, 7], {step: 1, value: 7, label: "Cascade step"})
+```
+
+```{ojs}
+sSales = mockSales.filter(d => d.step <= mstep)
+sFrame = mockFramework.filter(d => d.step <= mstep)
+posSales = mockSales.filter(d => d.step === mstep)
+posFrame = mockFramework.filter(d => d.step === mstep)
+```
+
+```{ojs}
+Plot.plot({
+  width: 720, height: 460, grid: true,
+  x: {domain: [2, 15], label: "CET1 ratio (%)"},
+  y: {domain: [30, 160], label: "LCR (%)"},
+  marks: [
+    // threshold regions on the capital axis
+    Plot.rectX([{}], {x1: 2, x2: 8.5, fill: "#d7301f", fillOpacity: 0.10}),
+    Plot.rectX([{}], {x1: 8.5, x2: 10, fill: "#fc8d59", fillOpacity: 0.12}),
+    Plot.ruleX([8.5], {stroke: "#d7301f", strokeDasharray: "3,3"}),
+    Plot.ruleX([10], {stroke: "#e34a33", strokeDasharray: "3,3"}),
+    Plot.ruleY([100], {stroke: "#2166ac", strokeDasharray: "3,3"}),
+    Plot.text([{x: 9.25, y: 34}], {x: "x", y: "y", text: ["runs intensify"], fontSize: 10, fill: "#b30000"}),
+    Plot.text([{x: 5.2, y: 34}], {x: "x", y: "y", text: ["full run intensity"], fontSize: 10, fill: "#b30000"}),
+    Plot.text([{x: 14.6, y: 104}], {x: "x", y: "y", text: ["LCR floor"], fontSize: 10, fill: "#2166ac", textAnchor: "end"}),
+    // trajectories
+    Plot.line(sSales, {x: "cet1", y: "lcr", stroke: "#d7301f", strokeWidth: 2, marker: "circle"}),
+    Plot.line(sFrame, {x: "cet1", y: "lcr", stroke: "#1a9850", strokeWidth: 2, marker: "circle"}),
+    Plot.dot(posSales, {x: "cet1", y: "lcr", r: 7, fill: "#d7301f"}),
+    Plot.dot(posFrame, {x: "cet1", y: "lcr", r: 7, fill: "#1a9850"}),
+    Plot.text(posSales, {x: "cet1", y: "lcr", text: ["Sales only"], dy: -14, fill: "#d7301f", fontWeight: "bold"}),
+    Plot.text(posFrame, {x: "cet1", y: "lcr", text: ["Full framework"], dy: -14, fill: "#1a9850", fontWeight: "bold"})
+  ]
+})
+```
+
+::: {.callout-note collapse="true"}
+This trajectory is **illustrative** — a stylised single bank drawn to show the
+mechanism and the thresholds. The thresholds themselves are the model's actual values
+(runs begin at 10% CET1, reach full intensity at 8.5%; LCR floor at 100%). The next
+chart shows the real paths the model produces across all bank groups.
+:::
+
+### What the model actually produces
+
+Each point below is a **group of banks** (by home country; countries with fewer than
+three banks are pooled into "Other euro area", so nothing here identifies an individual
+institution). Move the **intensity** slider to choose how severe the shock is, and the
+**step** slider to walk the cascade forward. The left panel is the sales-only world;
+the right adds the full framework — and the group paths echo the stylised story above.
 
 ```{ojs}
 raw = FileAttachment("../data/phase_space.csv").csv({typed: true})
