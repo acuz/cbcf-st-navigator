@@ -2,23 +2,40 @@
 title: "Scenario explorer"
 ---
 
-The paper reports the five geographic stress scenarios through a single cross-scenario
-summary table. Each scenario, though, produces a full set of exhibits across the whole
-intensity range and all four channel-mask arms. This page lets you **pick a scenario
-and see all of them.**
+The paper reports the stress scenarios through a single cross-scenario summary table.
+Each scenario, though, produces a full set of exhibits across its whole intensity range
+and all four channel-mask arms. This page lets you **pick a scenario and see all of
+them.**
 
-Pick a scenario:
+### What "intensity" means
+
+A scenario is defined by *which* exposures it impairs. **Intensity** is a homogeneous
+gradient along those exposures: at intensity $t$ every targeted exposure is marked down
+by the same fraction, scaled so that **1.0 is the scenario's fullest calibrated
+stress** and 0 is no shock. Because different scenarios hit different exposures, an
+intensity of 1.0 is *not* comparable across scenarios — read each scenario on its own,
+and compare the arms *within* it.
 
 ```{ojs}
 scenarios = [
-  {id: "eba",          label: "EBA 2021 adverse (headline)"},
-  {id: "giips_debt",   label: "Periphery sovereign repricing (GIIPS)"},
-  {id: "russia_shock", label: "Eastern-exposure credit (Russia + CEE)"},
-  {id: "asian_debt",   label: "East-Asian sovereign"},
-  {id: "north_res",    label: "Northern real-economy"},
-  {id: "south_res",    label: "Southern real-economy"}
+  {id: "eba", label: "Adverse (headline)",
+   desc: "A markdown of the **non-marketable loan book**, calibrated on the EBA 2021 adverse stress-test country projections. Intensity 1.0 is the full adverse calibration."},
+  {id: "giips_debt", label: "Periphery sovereign repricing",
+   desc: "A mark-to-market write-down on the **sovereign-debt holdings** of Italian, Irish, Portuguese, Spanish and Greek banks. Intensity 1.0 is a total write-off of those holdings."},
+  {id: "russia_shock", label: "Eastern-exposure credit",
+   desc: "Impairment of **Russian sovereign and credit exposures** together with Baltic, Slovak and Slovene credit. Intensity 1.0 is full impairment."},
+  {id: "asian_debt", label: "East-Asian sovereign",
+   desc: "A write-down on **East-Asian sovereign debt** (China, Japan, Hong Kong, Singapore, Korea). Intensity 1.0 is a total write-off."},
+  {id: "north_res", label: "Northern real economy",
+   desc: "A write-down on the **corporate and household loans** of northern member states (Netherlands, Germany, Denmark, Belgium, France). Because this hits a very large loan book, intensity is capped at a 20% uniform write-down (intensity 1.0); beyond that the exercise is neither plausible nor numerically valid."},
+  {id: "south_res", label: "Southern real economy",
+   desc: "A write-down on the **corporate and household loans** of southern member states (Italy, Portugal, Spain, Cyprus, Greece, Malta). As for the northern scenario, intensity is capped at a 20% uniform write-down (intensity 1.0)."}
 ]
 viewof scen = Inputs.select(scenarios, {label: "Scenario", format: d => d.label})
+```
+
+```{ojs}
+md`**${scen.label}.** ${scen.desc}`
 ```
 
 ```{ojs}
@@ -44,8 +61,35 @@ contagionFiles = ({
 mask = await maskFiles[scen.id].csv({typed: true})
 contagion = await contagionFiles[scen.id].csv({typed: true})
 armName = ({mask_S: "Sales only", mask_SU: "+ Unsecured", mask_SUR: "+ Repo", mask_SURC: "+ CB credit"})
-armOrder = ["mask_S", "mask_SU", "mask_SUR", "mask_SURC"]
+armDomain = ["Sales only", "+ Unsecured", "+ Repo", "+ CB credit"]
 maskT = mask.map(d => ({...d, arm_label: armName[d.arm]}))
+```
+
+::: {.callout-note}
+The **+ Unsecured** arm is drawn **dashed** because it coincides exactly with **Sales
+only** once the unsecured market freezes (roughly a third of banks running) — from that
+point adding the unsecured channel changes nothing, so the two lines lie on top of one
+another. That coincidence is a model result, not a gap in the data.
+:::
+
+```{ojs}
+// generic line-by-arm plot with the +Unsecured arm dashed so it stays visible
+function armPlot(rows, yfield, ylabel, opts = {}) {
+  const solid = rows.filter(d => d.arm_label !== "+ Unsecured")
+  const dashed = rows.filter(d => d.arm_label === "+ Unsecured")
+  return Plot.plot({
+    width: 820, height: 360, grid: true,
+    x: {label: "Shock intensity (0 = none, 1 = full-scenario stress)"},
+    y: {label: ylabel, ...(opts.y || {})},
+    color: {legend: true, domain: armDomain, label: "Arm"},
+    marks: [
+      Plot.line(solid, {x: "intensity_norm", y: yfield, stroke: "arm_label", marker: "circle"}),
+      Plot.line(dashed, {x: "intensity_norm", y: yfield, stroke: "arm_label",
+                         strokeDasharray: "5,3", marker: "circle"}),
+      Plot.ruleY([0])
+    ]
+  })
+}
 ```
 
 ## System equity loss by intensity
@@ -54,48 +98,29 @@ Each line is a channel-mask arm; the gap between "Sales only" and "+ CB credit" 
 framework's effect. Loss is on the wipe-to-zero measure, in percent of pre-shock CET1.
 
 ```{ojs}
-Plot.plot({
-  width: 820, height: 380, grid: true,
-  x: {label: "Shock intensity"},
-  y: {label: "System equity loss (%)"},
-  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
-  marks: [
-    Plot.line(maskT, {x: "intensity_num", y: "eq_loss_resid_pct", stroke: "arm_label", marker: "circle"}),
-    Plot.ruleY([0])
-  ]
-})
+armPlot(maskT, "eq_loss_resid_pct", "System equity loss (%)")
 ```
 
 ## Defaults by intensity
 
 ```{ojs}
-Plot.plot({
-  width: 820, height: 380, grid: true,
-  x: {label: "Shock intensity"},
-  y: {label: "Number of defaults"},
-  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
-  marks: [
-    Plot.line(maskT, {x: "intensity_num", y: "n_defaults", stroke: "arm_label", marker: "circle"}),
-    Plot.ruleY([0])
-  ]
-})
+armPlot(maskT, "n_defaults", "Number of defaults")
 ```
 
 ## Central-bank collateral pledged
 
-How much collateral banks pledge at the central-bank window under the full framework,
-by intensity.
+How much collateral banks pledge at the central-bank window under the full framework.
 
 ```{ojs}
 Plot.plot({
-  width: 820, height: 340, grid: true,
-  x: {label: "Shock intensity"},
+  width: 820, height: 320, grid: true,
+  x: {label: "Shock intensity (0 = none, 1 = full-scenario stress)"},
   y: {label: "CB pledged (€bn)"},
   marks: [
     Plot.areaY(maskT.filter(d => d.arm === "mask_SURC"),
-               {x: "intensity_num", y: "cb_pledged_bn", fillOpacity: 0.25}),
+               {x: "intensity_norm", y: "cb_pledged_bn", fillOpacity: 0.25}),
     Plot.line(maskT.filter(d => d.arm === "mask_SURC"),
-              {x: "intensity_num", y: "cb_pledged_bn", marker: "circle"}),
+              {x: "intensity_norm", y: "cb_pledged_bn", marker: "circle"}),
     Plot.ruleY([0])
   ]
 })
@@ -104,29 +129,18 @@ Plot.plot({
 ## Loss amplification by intensity
 
 The contagion amplification ratio — induced losses as a fraction of the direct shock —
-by arm. Lower is better: it measures how much the fire-sale channel multiplies the
-initial hit.
+by arm. Lower is better.
 
 ```{ojs}
 contagionT = contagion.map(d => ({...d, arm_label: armName[d.config]})).filter(d => d.arm_label)
-Plot.plot({
-  width: 820, height: 360, grid: true,
-  x: {label: "Shock intensity"},
-  y: {label: "Amplification ratio"},
-  color: {legend: true, domain: armOrder.map(a => armName[a]), label: "Arm"},
-  marks: [
-    Plot.line(contagionT, {x: "intensity_num", y: "amp_ratio", stroke: "arm_label", marker: "circle"}),
-    Plot.ruleY([0])
-  ]
-})
+armPlot(contagionT, "amp_ratio", "Amplification ratio")
 ```
 
 ::: {.callout-note collapse="true"}
 ## Notes
-All series are cross-seed means over ten seeds for the stochastic arms (repo and
-CB-credit); the sales-only and unsecured arms are deterministic. Intensity is scenario-
-specific: for the EBA scenario it scales the 2021 adverse markdown, while for the
-geographic scenarios it is the write-down fraction on the targeted exposures, so levels
-are not comparable across scenarios — compare arms *within* a scenario. Data are
-aggregated over the whole 67-bank sample; no bank-level figures are shown.
+Series are cross-seed means over ten seeds for the stochastic arms (repo and CB-credit);
+sales-only and unsecured are deterministic. Intensity is a per-scenario 0–1 gradient
+(see above); the real-economy loan scenarios are capped at a 20% uniform write-down,
+beyond which the loss measure is not valid. Data are aggregated over the whole 67-bank
+sample; no bank-level figures are shown.
 :::

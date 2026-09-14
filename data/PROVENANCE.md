@@ -17,18 +17,6 @@ trajectories, from group-aggregated headline liabilities).
 
 | file | source | rows | cols |
 |------|--------|------|------|
-| `mask_summary_eba.csv` | `tab_mask_summary.csv` | 40 | 37 |
-| `mask_summary_giips_debt.csv` | `tab_mask_summary_giips_debt.csv` | 28 | 37 |
-| `mask_summary_russia_shock.csv` | `tab_mask_summary_russia_shock.csv` | 28 | 37 |
-| `mask_summary_asian_debt.csv` | `tab_mask_summary_asian_debt.csv` | 28 | 37 |
-| `mask_summary_north_res.csv` | `tab_mask_summary_north_res.csv` | 28 | 37 |
-| `mask_summary_south_res.csv` | `tab_mask_summary_south_res.csv` | 28 | 37 |
-| `contagion_summary_eba.csv` | `tab_contagion_summary.csv` | 52 | 12 |
-| `contagion_summary_giips_debt.csv` | `tab_contagion_summary_giips_debt.csv` | 40 | 7 |
-| `contagion_summary_russia_shock.csv` | `tab_contagion_summary_russia_shock.csv` | 20 | 7 |
-| `contagion_summary_asian_debt.csv` | `tab_contagion_summary_asian_debt.csv` | 20 | 7 |
-| `contagion_summary_north_res.csv` | `tab_contagion_summary_north_res.csv` | 20 | 7 |
-| `contagion_summary_south_res.csv` | `tab_contagion_summary_south_res.csv` | 20 | 7 |
 | `shapley_decomp.csv` | `tab_shapley_decomp.csv` | 4 | 24 |
 | `sensitivity_freeze.csv` | `tab_sensitivity_freeze.csv` | 19 | 12 |
 | `sensitivity_fsa.csv` | `tab_sensitivity_fsa.csv` | 5 | 11 |
@@ -39,4 +27,16 @@ trajectories, from group-aggregated headline liabilities).
 | `collateral_pool.csv` | `tab_validation_collateral_pool.csv` | 5 | 3 |
 | `calibration_friction.csv` | `tab_calibration_friction.csv` | 14 | 3 |
 | `phase_space.csv` | `headline/eba liabilities (group-aggregated)` | 2665 | 7 |
+| `mask_summary_eba.csv` | `tab_mask_summary.csv (I<=1.00, normalised)` | 40 | 38 |
+| `contagion_summary_eba.csv` | `tab_contagion_summary.csv (I<=1.00, normalised)` | 52 | 13 |
+| `mask_summary_giips_debt.csv` | `tab_mask_summary_giips_debt.csv (I<=1.00, normalised)` | 28 | 38 |
+| `contagion_summary_giips_debt.csv` | `tab_contagion_summary_giips_debt.csv (I<=1.00, normalised)` | 40 | 8 |
+| `mask_summary_russia_shock.csv` | `tab_mask_summary_russia_shock.csv (I<=1.00, normalised)` | 28 | 38 |
+| `contagion_summary_russia_shock.csv` | `tab_contagion_summary_russia_shock.csv (I<=1.00, normalised)` | 20 | 8 |
+| `mask_summary_asian_debt.csv` | `tab_mask_summary_asian_debt.csv (I<=1.00, normalised)` | 28 | 38 |
+| `contagion_summary_asian_debt.csv` | `tab_contagion_summary_asian_debt.csv (I<=1.00, normalised)` | 20 | 8 |
+| `mask_summary_north_res.csv` | `tab_mask_summary_north_res.csv (I<=0.20, normalised)` | 20 | 38 |
+| `contagion_summary_north_res.csv` | `tab_contagion_summary_north_res.csv (I<=0.20, normalised)` | 20 | 8 |
+| `mask_summary_south_res.csv` | `tab_mask_summary_south_res.csv (I<=0.20, normalised)` | 20 | 38 |
+| `contagion_summary_south_res.csv` | `tab_contagion_summary_south_res.csv (I<=0.20, normalised)` | 20 | 8 |
 | `channel_liquidity.csv` | `input/{haircuts,repo_haircuts,max_discounts}.csv (schedule)` | 21 | 3 |
