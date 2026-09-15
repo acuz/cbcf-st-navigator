@@ -57,38 +57,37 @@ measure on the Headline results page to see it.
 ## Sensitivity sweeps
 
 Each sweep perturbs one friction one-at-a-time and re-measures the channel marginals
-Δ_U / Δ_R / Δ_C (percentage points of CET1) at the focal intensity. The dashed line
-marks the headline calibration. Across all four, the **sign and ordering of the
-marginals are preserved** — repo positive and largest, central-bank credit positive,
-unsecured small.
+Δ_U / Δ_R / Δ_C (percentage points of CET1). Δ_U is flat at zero throughout — the
+unsecured market is frozen at these intensities — so what you are watching is the split
+between **repo (Δ_R)** and **central-bank credit (Δ_C)**, and whether the total benefit
+holds. The vertical dashed line marks the headline calibration.
+
+The key is to read the two stress regimes together: **moderate stress (intensity 0.5)**
+and **the tail (intensity 1.0)**. They tell opposite halves of one story.
 
 ```{ojs}
-sweeps = [
-  {file: "sensitivity_freeze.csv", key: "nr", label: "Repo-freeze threshold (banks running)"},
-  {file: "sensitivity_fsa.csv",    key: "amp", label: "Fire-sale amplifier"},
-  {file: "sensitivity_rho.csv",    key: "rho", label: "Repo-congestion elasticity"},
-  {file: "sensitivity_run_k1.csv", key: "k1", label: "Depositor-run intensity"}
-]
-freeze = FileAttachment("../data/sensitivity_freeze.csv").csv({typed: true})
-fsa    = FileAttachment("../data/sensitivity_fsa.csv").csv({typed: true})
-rho    = FileAttachment("../data/sensitivity_rho.csv").csv({typed: true})
-runk1  = FileAttachment("../data/sensitivity_run_k1.csv").csv({typed: true})
-sweepData = ({sensitivity_freeze: freeze, sensitivity_fsa: fsa, sensitivity_rho: rho, sensitivity_run_k1: runk1})
+freeze   = FileAttachment("../data/sensitivity_freeze.csv").csv({typed: true})
+fsa      = FileAttachment("../data/sensitivity_fsa.csv").csv({typed: true})
+rho      = FileAttachment("../data/sensitivity_rho.csv").csv({typed: true})
+runk1    = FileAttachment("../data/sensitivity_run_k1.csv").csv({typed: true})
+freezeT  = FileAttachment("../data/sensitivity_freeze_i1.csv").csv({typed: true})
+fsaT     = FileAttachment("../data/sensitivity_fsa_i1.csv").csv({typed: true})
+rhoT     = FileAttachment("../data/sensitivity_rho_i1.csv").csv({typed: true})
+runk1T   = FileAttachment("../data/sensitivity_run_k1_i1.csv").csv({typed: true})
 ```
 
 ```{ojs}
 function sweepPlot(rows, key, label) {
   const long = rows.flatMap(r => [
-    {x: r[key], channel: "Δ_U", value: r.delta_U_pp, headline: r.headline},
-    {x: r[key], channel: "Δ_R", value: r.delta_R_pp, headline: r.headline},
-    {x: r[key], channel: "Δ_C", value: r.delta_C_pp, headline: r.headline}
+    {x: r[key], channel: "Δ_R (repo)", value: r.delta_R_pp},
+    {x: r[key], channel: "Δ_C (CB credit)", value: r.delta_C_pp}
   ])
   const hx = rows.filter(r => r.headline === true || r.headline === "TRUE").map(r => r[key])
   return Plot.plot({
-    width: 420, height: 260, grid: true, marginBottom: 40,
+    width: 420, height: 250, grid: true, marginBottom: 40,
     x: {label: label},
-    y: {label: "Marginal (pp)"},
-    color: {legend: true, label: "Channel"},
+    y: {label: "Marginal (pp of CET1)"},
+    color: {legend: true, domain: ["Δ_R (repo)", "Δ_C (CB credit)"], label: "Channel"},
     marks: [
       hx.length ? Plot.ruleX(hx, {stroke: "grey", strokeDasharray: "3,3"}) : null,
       Plot.line(long, {x: "x", y: "value", stroke: "channel", marker: "circle"}),
@@ -97,6 +96,15 @@ function sweepPlot(rows, key, label) {
   })
 }
 ```
+
+### Moderate stress (intensity 0.5): repo is the workhorse
+
+Here **repo carries the framework** — Δ_R is large and positive, Δ_C hovers near zero.
+Repo congestion (bottom-left) barely matters and the freeze threshold (top-left) is
+irrelevant once it is loose enough. The one thing that moves the result is **how hard
+depositors run** (bottom-right): below a threshold almost nothing is at stake, above it
+the benefit switches on — this is the intensity-0.5 default cliff seen on the results
+page.
 
 ::: {layout-ncol=2}
 ```{ojs}
@@ -116,12 +124,44 @@ sweepPlot(runk1, "k1", "Depositor-run intensity")
 ```
 :::
 
+### The tail (intensity 1.0): central-bank credit carries it
+
+At full intensity the picture **inverts**: repo is exhausted (Δ_R ≈ 0 everywhere) and
+**central-bank credit does essentially all the work** (Δ_C ≈ 6 pp). This holds across
+every perturbation — it is completely flat in repo congestion, and robust to the
+fire-sale amplifier and the freeze threshold. Only very severe runs move it, and even
+then the contribution stays with the central bank. This is the CBCF acting as the
+**tail insurer**: the channel of last resort when nothing else is left.
+
+::: {layout-ncol=2}
+```{ojs}
+sweepPlot(freezeT.filter(r => r.nu === 20), "nr", "Repo-freeze threshold")
+```
+
+```{ojs}
+sweepPlot(fsaT, "amp", "Fire-sale amplifier")
+```
+
+```{ojs}
+sweepPlot(rhoT, "rho", "Repo-congestion elasticity")
+```
+
+```{ojs}
+sweepPlot(runk1T, "k1", "Depositor-run intensity")
+```
+:::
+
+**Together** the two regimes are the paper's central claim, seen through the robustness
+lens: private repo absorbs moderate stress, the central bank absorbs the tail, and this
+handoff survives perturbing every friction we vary.
+
 ::: {.callout-note collapse="true"}
 ## Notes
 Shapley values average each channel's marginal over the six activation orderings of
 {U, R, C}; standard errors follow by exact propagation from the arm-level cross-seed
-errors. Sensitivity sweeps vary one friction at a time at the focal intensity, ten
-seeds per stochastic cell; the freeze panel fixes the unsecured-freeze threshold at its
-headline value and varies the repo-freeze threshold. All aggregates over the whole
-67-bank sample.
+errors. Sensitivity sweeps vary one friction at a time, ten seeds per stochastic cell,
+measured at intensity 0.5 (moderate) and 1.0 (tail); the freeze panels fix the
+unsecured-freeze threshold at its headline value and vary the repo-freeze threshold.
+Δ_U is omitted from the panels because it is zero at both intensities (frozen unsecured
+market). All aggregates over the whole 67-bank sample.
 :::
