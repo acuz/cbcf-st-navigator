@@ -19,8 +19,9 @@ and its **liquidity coverage ratio** (vertical). Stress pushes a bank through th
 plane, and where it goes determines whether it stabilises or spirals. Two thresholds
 matter:
 
-- **CET1 = 10%** — below this a bank's depositors start to run, and the runs intensify
-  as capital falls further, reaching full intensity at **CET1 = 8.5%**.
+- **CET1 = 13%** — below this a bank's depositors start to run. Withdrawals grow as
+  capital falls, reach their base rate at the regulatory minimum of **CET1 = 8.5%**, and
+  rise more steeply below it. They also escalate the longer a bank stays below 13%.
 - **LCR = 100%** — the regulatory liquidity floor.
 
 ### A typical bank under stress
@@ -39,9 +40,9 @@ mockSales = [
   {step:6, cet1:5.6, lcr:54},   {step:7, cet1:3.8, lcr:44}
 ]
 mockFramework = [
-  {step:0, cet1:14.0, lcr:150}, {step:1, cet1:13.6, lcr:146}, {step:2, cet1:13.3, lcr:141},
-  {step:3, cet1:13.1, lcr:139}, {step:4, cet1:12.9, lcr:138}, {step:5, cet1:12.8, lcr:137},
-  {step:6, cet1:12.8, lcr:137}, {step:7, cet1:12.7, lcr:136}
+  {step:0, cet1:14.0, lcr:150}, {step:1, cet1:13.9, lcr:146}, {step:2, cet1:13.8, lcr:141},
+  {step:3, cet1:13.6, lcr:139}, {step:4, cet1:13.5, lcr:138}, {step:5, cet1:13.4, lcr:137},
+  {step:6, cet1:13.4, lcr:137}, {step:7, cet1:13.3, lcr:136}
 ]
 viewof mstep = Inputs.range([0, 7], {step: 1, value: 7, label: "Cascade step"})
 ```
@@ -61,12 +62,12 @@ Plot.plot({
   marks: [
     // threshold regions on the capital axis
     Plot.rectX([{}], {x1: 2, x2: 8.5, fill: "#d7301f", fillOpacity: 0.10}),
-    Plot.rectX([{}], {x1: 8.5, x2: 10, fill: "#fc8d59", fillOpacity: 0.12}),
+    Plot.rectX([{}], {x1: 8.5, x2: 13, fill: "#fc8d59", fillOpacity: 0.12}),
     Plot.ruleX([8.5], {stroke: "#d7301f", strokeDasharray: "3,3"}),
-    Plot.ruleX([10], {stroke: "#e34a33", strokeDasharray: "3,3"}),
+    Plot.ruleX([13], {stroke: "#e34a33", strokeDasharray: "3,3"}),
     Plot.ruleY([100], {stroke: "#2166ac", strokeDasharray: "3,3"}),
-    Plot.text([{x: 9.25, y: 34}], {x: "x", y: "y", text: ["runs intensify"], fontSize: 10, fill: "#b30000"}),
-    Plot.text([{x: 5.2, y: 34}], {x: "x", y: "y", text: ["full run intensity"], fontSize: 10, fill: "#b30000"}),
+    Plot.text([{x: 10.75, y: 34}], {x: "x", y: "y", text: ["runs intensify"], fontSize: 10, fill: "#b30000"}),
+    Plot.text([{x: 5.2, y: 34}], {x: "x", y: "y", text: ["steeper runs"], fontSize: 10, fill: "#b30000"}),
     Plot.text([{x: 14.6, y: 104}], {x: "x", y: "y", text: ["LCR floor"], fontSize: 10, fill: "#2166ac", textAnchor: "end"}),
     // trajectories
     Plot.line(sSales, {x: "cet1", y: "lcr", stroke: "#d7301f", strokeWidth: 2, marker: "circle"}),
@@ -82,7 +83,8 @@ Plot.plot({
 ::: {.callout-note collapse="true"}
 This trajectory is **illustrative** — a stylised single bank drawn to show the
 mechanism and the thresholds. The thresholds themselves are the model's actual values:
-runs begin at 10% CET1, reach full intensity at 8.5%, and the LCR floor is 100%.
+runs begin at 13% CET1, reach their base rate at the 8.5% regulatory minimum and rise
+more steeply below it, and the LCR floor is 100%.
 :::
 
 ## Collateral-conditional liquidity
